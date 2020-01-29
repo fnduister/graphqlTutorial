@@ -1,0 +1,7 @@
+{
+    "env":{
+        "MONGO_USER": "fnduister",
+        "MONGO_PASSWORD": "mael2015",
+        "MONGO_DB": "graphqlTuto"
+    }
+}
