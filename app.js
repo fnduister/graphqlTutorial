@@ -41,7 +41,6 @@ app.use('/graphql', graphqlHttp({
             return events;
         },
         createEvent: ({eventInput}) => {
-        console.log("TCL: eventInput", eventInput.title)
             const newEvent = {
                 _id: Math.random().toString(),
                 title: eventInput.title,
@@ -50,7 +49,8 @@ app.use('/graphql', graphqlHttp({
                 price: eventInput.price
             }
             events.push(newEvent);
-            return events;
+            console.log("TCL: eventInput", events);
+            return newEvent;
         }
     },
     graphiql: true,
