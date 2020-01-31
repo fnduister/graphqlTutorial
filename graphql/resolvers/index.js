@@ -15,10 +15,8 @@ const events = async (eventIds) => {
 };
 
 const user = async (userId) => {
-  console.log('TCL: user -> userId', userId);
   try {
     const currentUser = await User.findById(userId);
-    console.log('TCL: user -> currentUser', currentUser);
     return {
       ...currentUser._doc,
       createdEvents: events(currentUser._doc.createdEvents),
@@ -46,13 +44,23 @@ module.exports = {
   bookings: async () => {
     try {
       const bookings = await Booking.find();
+      console.log('TCL: booking', bookings);
       return bookings.map((booking) => {
         return {
-          ...bookings._doc,
+          ...booking._doc,
           user: user(booking._doc.userId),
           event: event(booking._doc.eventId),
         };
       });
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  cancelBooking: async ({ eventId, userId }) => {
+    try {
+      const canceledBooking = await Booking.deleteOne({ eventId, userId });
+      return canceledBooking.deletedCount;
     } catch (err) {
       throw err;
     }
@@ -85,6 +93,7 @@ module.exports = {
       throw err;
     }
   },
+
   createEvent: async ({ eventInput }) => {
     const newEvent = new Event({
       title: eventInput.title,
