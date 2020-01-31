@@ -16,5 +16,7 @@
         "ecmaVersion": 2018
     },
     "rules": {
+        "object-curly-spacing": "off",
+        "indent": "off"
     }
 }
