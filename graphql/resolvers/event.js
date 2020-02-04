@@ -1,24 +1,20 @@
 const Event = require('../../models/events');
 const User = require('../../models/users');
-const { user } = require('./merge');
-const { dateToString } = require('../../helpers/date');
+const { transformEvent } = require('./merge');
 
 exports.events = async () => {
   try {
     const events = await Event.find();
-    return events.map((event) => {
-      return {
-        ...event._doc,
-        creator: user(event._doc.creator),
-        date: dateToString(event._doc.date),
-      };
-    });
+    return events.map(transformEvent);
   } catch (err) {
     throw err;
   }
 };
 
-exports.createEvent = async ({ eventInput }) => {
+exports.createEvent = async ({ eventInput }, req) => {
+  if (!req.isAuth) {
+    throw new Error('Unauthenticated: you should sign in to commit this action');
+  }
   const newEvent = new Event({
     title: eventInput.title,
     date: Date.now(),
@@ -31,8 +27,8 @@ exports.createEvent = async ({ eventInput }) => {
     const result = await newEvent.save();
     if (!creator) throw new Error('this user does not ex');
     creator.createdEvents.push(result._doc._id);
-    creator.save();
-    return { ...result._doc };
+    await creator.save();
+    return transformEvent(result);
   } catch (err) {
     console.log(err);
     throw err;

@@ -1,8 +1,11 @@
 const express = require('express');
 const graphqlHttp = require('express-graphql');
 const mongoose = require('mongoose');
+const auth = require('./middleware/auth');
 
 const app = express();
+
+app.use(auth);
 const {graphiqlResolvers} = require('./graphql/resolvers/index');
 const graphiqlSchemas = require('./graphql/schemas');
 app.use(

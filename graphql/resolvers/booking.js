@@ -1,14 +1,5 @@
 const Booking = require('../../models/bookings');
-const { user, event } = require('./merge');
-const { dateToString } = require('../../helpers/date');
-
-const transformBooking = (booking) => ({
-  ...booking._doc,
-  user: user(booking._doc.userId),
-  event: event(booking._doc.eventId),
-  createdAt: dateToString(booking._doc.createdAt),
-  updatedAt: dateToString(booking._doc.updatedAt),
-});
+const { transformBooking } = require('./merge');
 
 exports.bookings = async () => {
   try {
@@ -19,20 +10,26 @@ exports.bookings = async () => {
   }
 };
 
-exports.cancelBooking = async ({ eventId, userId }) => {
+exports.cancelBooking = async ({ eventId }, req) => {
+  if (!req.isAuth) {
+    throw new Error('Unauthenticated: you should sign in to commit this action');
+  }
   try {
-    const canceledBooking = await Booking.deleteOne({ eventId, userId });
+    const canceledBooking = await Booking.deleteOne({ eventId, userId: req.userId });
     return canceledBooking.deletedCount;
   } catch (err) {
     throw err;
   }
 };
 
-exports.createBooking = async ({ eventId, userId }) => {
+exports.createBooking = async ({ eventId }, req) => {
+  if (!req.isAuth) {
+    throw new Error('Unauthenticated: you should sign in to commit this action');
+  }
   try {
     const newBooking = new Booking({
       eventId,
-      userId,
+      userId: req.userId,
     });
     const savedBooking = await newBooking.save();
     return transformBooking(savedBooking);

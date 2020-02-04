@@ -1,13 +1,7 @@
 const User = require('../../models/users');
 const bcrypt = require('bcryptjs');
-const { events } = require('./merge');
-const { dateToString } = require('../../helpers/date');
-
-const transformUser = (user) => ({
-  ...user._doc,
-  createdEvents: events(user._doc.createdEvents),
-  lastSeen: dateToString(user._doc.lastSeen),
-});
+const jwt = require('jsonwebtoken');
+const { transformUser } = require('./merge');
 
 exports.users = async () => {
   try {
@@ -41,6 +35,26 @@ exports.createUser = async ({ userInput }) => {
     }
   } catch (err) {
     console.log(err);
+    throw err;
+  }
+};
+
+exports.login = async ({ username, password }) => {
+  try {
+    const currentUser = await User.findOne({ username });
+    if (!currentUser) {
+      throw new Error('username or password not valid');
+    }
+    if (!(await bcrypt.compare(password, currentUser.password))) {
+      throw new Error('username or password not valid');
+    }
+    const token = jwt.sign(
+      { userId: currentUser.id, username: currentUser.username },
+      'somereallysuperkeybro',
+      { expiresIn: '1h' },
+    );
+    return { userId: currentUser.id, token, tokenExpiration: 1 };
+  } catch (err) {
     throw err;
   }
 };
